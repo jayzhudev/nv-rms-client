@@ -468,7 +468,14 @@ service RackManager {
    * system image update job.
    */
   rpc GetSwitchSystemImageJobStatus(GetSwitchSystemImageJobStatusRequest) returns (GetSwitchSystemImageJobStatusResponse) {}
-  
+
+  /*
+   * UpdateSwitchSystemPassword updates the OS-level password for a specific user
+   * on a caller-supplied list of switch devices. Credentials are resolved from
+   * the node's stored inventory data.
+   */
+  rpc UpdateSwitchSystemPassword(UpdateSwitchSystemPasswordRequest) returns (UpdateSwitchSystemPasswordResponse) {}
+
   /*---------------------------------------------------------------------------
    * Utility RPCs
    *-------------------------------------------------------------------------*/
@@ -1041,6 +1048,24 @@ message PollJobStatusResponse {
   string state = 3;        // State of the job (active,pending,running)   
   string result_json = 4; // JSON object containing configuration result
   string error_message = 5; // Error details if configuration failed
+}
+
+/*******************************************************************************
+ * SWITCH PASSWORD CONTROL MESSAGES
+ ******************************************************************************/
+
+// UpdateSwitchSystemPasswordRequest updates the OS-level password for a user on a set of switch devices.
+message UpdateSwitchSystemPasswordRequest {
+  Metadata metadata = 1;
+  NodeSet nodes = 2;       // Switch devices to update
+  string username = 3;     // Target OS username whose password will be changed (mandatory)
+  string password = 4;     // New password to set for the user (mandatory)
+}
+
+// UpdateSwitchSystemPasswordResponse reports the per-node results of a synchronous password update.
+message UpdateSwitchSystemPasswordResponse {
+  Metadata metadata = 1;
+  repeated NodeUpdateResult node_results = 7;       // Individual result per switch node
 }
 
 /*******************************************************************************
