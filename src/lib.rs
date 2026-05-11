@@ -266,10 +266,7 @@ impl RmsApi for RackManagerApi {
         &self,
         cmd: rms::SetPowerStateRequest,
     ) -> Result<rms::SetPowerStateResponse, RackManagerError> {
-        self.client
-            .set_power_state(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.set_power_state(cmd).await?)
     }
     async fn set_power_state_by_device_list(
         &self,
@@ -284,256 +281,175 @@ impl RmsApi for RackManagerApi {
         &self,
         cmd: rms::GetPowerStateRequest,
     ) -> Result<rms::GetPowerStateResponse, RackManagerError> {
-        self.client
-            .get_power_state(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_power_state(cmd).await?)
     }
     async fn sequence_rack_power(
         &self,
         cmd: rms::SequenceRackPowerRequest,
     ) -> Result<rms::SequenceRackPowerResponse, RackManagerError> {
-        self.client
-            .sequence_rack_power(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.sequence_rack_power(cmd).await?)
     }
     async fn get_all_inventory(
         &self,
         cmd: rms::GetAllInventoryRequest,
     ) -> Result<rms::GetAllInventoryResponse, RackManagerError> {
-        self.client
-            .get_all_inventory(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_all_inventory(cmd).await?)
     }
     async fn add_node(
         &self,
         cmd: rms::AddNodeRequest,
     ) -> Result<rms::AddNodeResponse, RackManagerError> {
-        self.client
-            .add_node(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.add_node(cmd).await?)
     }
     async fn update_node(
         &self,
         cmd: rms::UpdateNodeRequest,
     ) -> Result<rms::UpdateNodeResponse, RackManagerError> {
-        self.client
-            .update_node(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.update_node(cmd).await?)
     }
     async fn remove_node(
         &self,
         cmd: rms::RemoveNodeRequest,
     ) -> Result<rms::RemoveNodeResponse, RackManagerError> {
-        self.client
-            .remove_node(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.remove_node(cmd).await?)
     }
     async fn get_rack_power_on_sequence(
         &self,
         cmd: rms::GetRackPowerOnSequenceRequest,
     ) -> Result<rms::GetRackPowerOnSequenceResponse, RackManagerError> {
-        self.client
-            .get_rack_power_on_sequence(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_rack_power_on_sequence(cmd).await?)
     }
     async fn set_rack_power_on_sequence(
         &self,
         cmd: rms::SetRackPowerOnSequenceRequest,
     ) -> Result<rms::SetRackPowerOnSequenceResponse, RackManagerError> {
-        self.client
-            .set_rack_power_on_sequence(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.set_rack_power_on_sequence(cmd).await?)
     }
     async fn list_racks(
         &self,
         cmd: rms::ListRacksRequest,
     ) -> Result<rms::ListRacksResponse, RackManagerError> {
-        self.client
-            .list_racks(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.list_racks(cmd).await?)
     }
     async fn get_node_device_info(
         &self,
         cmd: rms::GetNodeDeviceInfoRequest,
     ) -> Result<rms::GetNodeDeviceInfoResponse, RackManagerError> {
-        self.client
-            .get_node_device_info(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_node_device_info(cmd).await?)
     }
     async fn get_device_info_by_node_type(
         &self,
         cmd: rms::GetDeviceInfoByNodeTypeRequest,
     ) -> Result<rms::GetDeviceInfoByNodeTypeResponse, RackManagerError> {
-        self.client
-            .get_device_info_by_node_type(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_device_info_by_node_type(cmd).await?)
     }
     async fn get_device_info_by_device_list(
         &self,
         cmd: rms::GetDeviceInfoByDeviceListRequest,
     ) -> Result<rms::GetDeviceInfoByDeviceListResponse, RackManagerError> {
-        self.client
-            .get_device_info_by_device_list(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_device_info_by_device_list(cmd).await?)
     }
     async fn get_node_firmware_inventory(
         &self,
         cmd: rms::GetNodeFirmwareInventoryRequest,
     ) -> Result<rms::GetNodeFirmwareInventoryResponse, RackManagerError> {
-        self.client
-            .get_node_firmware_inventory(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_node_firmware_inventory(cmd).await?)
     }
     async fn get_rack_firmware_inventory(
         &self,
         cmd: rms::GetRackFirmwareInventoryRequest,
     ) -> Result<rms::GetRackFirmwareInventoryResponse, RackManagerError> {
-        self.client
-            .get_rack_firmware_inventory(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_rack_firmware_inventory(cmd).await?)
     }
     async fn list_firmware_on_switch(
         &self,
         cmd: rms::ListFirmwareOnSwitchCommand,
     ) -> Result<rms::ListFirmwareOnSwitchResponse, RackManagerError> {
-        self.client
-            .list_firmware_on_switch(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.list_firmware_on_switch(cmd).await?)
     }
     async fn push_firmware_to_switch(
         &self,
         cmd: rms::PushFirmwareToSwitchCommand,
     ) -> Result<rms::PushFirmwareToSwitchResponse, RackManagerError> {
-        self.client
-            .push_firmware_to_switch(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.push_firmware_to_switch(cmd).await?)
     }
     async fn upgrade_firmware_on_switch(
         &self,
         cmd: UpgradeFirmwareOnSwitchCommand,
     ) -> Result<UpgradeFirmwareOnSwitchResponse, RackManagerError> {
-        self.client
-            .upgrade_firmware_on_switch(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.upgrade_firmware_on_switch(cmd).await?)
     }
     async fn configure_scale_up_fabric_manager(
         &self,
         cmd: rms::ConfigureScaleUpFabricManagerRequest,
     ) -> Result<rms::ConfigureScaleUpFabricManagerResponse, RackManagerError> {
-        self.client
-            .configure_scale_up_fabric_manager(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.configure_scale_up_fabric_manager(cmd).await?)
     }
     async fn fetch_switch_system_image(
         &self,
         cmd: rms::FetchSwitchSystemImageRequest,
     ) -> Result<rms::FetchSwitchSystemImageResponse, RackManagerError> {
-        self.client
-            .fetch_switch_system_image(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.fetch_switch_system_image(cmd).await?)
     }
     async fn install_switch_system_image(
         &self,
         cmd: rms::InstallSwitchSystemImageRequest,
     ) -> Result<rms::InstallSwitchSystemImageResponse, RackManagerError> {
-        self.client
-            .install_switch_system_image(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.install_switch_system_image(cmd).await?)
     }
     async fn list_switch_system_images(
         &self,
         cmd: rms::ListSwitchSystemImagesRequest,
     ) -> Result<rms::ListSwitchSystemImagesResponse, RackManagerError> {
-        self.client
-            .list_switch_system_images(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.list_switch_system_images(cmd).await?)
     }
     async fn enable_scale_up_fabric_telemetry_interface(
         &self,
         cmd: rms::EnableScaleUpFabricTelemetryInterfaceRequest,
     ) -> Result<rms::EnableScaleUpFabricTelemetryInterfaceResponse, RackManagerError> {
-        self.client
+        Ok(self
+            .client
             .enable_scale_up_fabric_telemetry_interface(cmd)
-            .await
-            .map_err(RackManagerError::from)
+            .await?)
     }
     async fn version(&self) -> Result<(), RackManagerError> {
-        self.client.version().await.map_err(RackManagerError::from)
+        Ok(self.client.version().await?)
     }
     async fn poll_job_status(
         &self,
         cmd: rms::PollJobStatusCommand,
     ) -> Result<rms::PollJobStatusResponse, RackManagerError> {
-        self.client
-            .poll_job_status(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.poll_job_status(cmd).await?)
     }
     async fn update_node_firmware_async(
         &self,
         cmd: rms::UpdateNodeFirmwareRequest,
     ) -> Result<rms::UpdateNodeFirmwareResponse, RackManagerError> {
-        self.client
-            .update_node_firmware_async(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.update_node_firmware_async(cmd).await?)
     }
     async fn update_firmware_by_node_type_async(
         &self,
         cmd: rms::UpdateFirmwareByNodeTypeRequest,
     ) -> Result<rms::UpdateFirmwareByNodeTypeAsyncResponse, RackManagerError> {
-        self.client
-            .update_firmware_by_node_type_async(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.update_firmware_by_node_type_async(cmd).await?)
     }
     async fn update_firmware_by_device_list(
         &self,
         cmd: rms::UpdateFirmwareByDeviceListRequest,
     ) -> Result<rms::UpdateFirmwareByDeviceListResponse, RackManagerError> {
-        self.client
-            .update_firmware_by_device_list(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.update_firmware_by_device_list(cmd).await?)
     }
     async fn get_firmware_job_status(
         &self,
         cmd: rms::GetFirmwareJobStatusRequest,
     ) -> Result<rms::GetFirmwareJobStatusResponse, RackManagerError> {
-        self.client
-            .get_firmware_job_status(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.get_firmware_job_status(cmd).await?)
     }
     async fn update_switch_system_password(
         &self,
         cmd: rms::UpdateSwitchSystemPasswordRequest,
     ) -> Result<rms::UpdateSwitchSystemPasswordResponse, RackManagerError> {
-        self.client
-            .update_switch_system_password(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.update_switch_system_password(cmd).await?)
     }
 }
 
@@ -613,5 +529,37 @@ impl tonic_client_wrapper::ConnectionProvider<RackManagerClientT> for RmsTlsConn
 
     fn connection_url(&self) -> &str {
         self.url.as_str()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::protos::rack_manager as rms;
+
+    /// Compile-time trait bound check. The function body is empty and optimized away;
+    /// the compiler just verifies T satisfies Serialize + DeserializeOwned. If the
+    /// type_attribute in build.rs stops covering a type, the call site fails to compile.
+    fn assert_serde<T: serde::Serialize + serde::de::DeserializeOwned>() {}
+
+    /// Verifies that the single package-level type_attribute(".rack_manager", ...) in
+    /// build.rs correctly applies serde derives to all proto-generated types. Covers
+    /// the structurally distinct categories: plain messages, the oneof enum nested inside
+    /// Credentials (which previously needed separate handling), top-level enums, and a
+    /// request/response pair.
+    #[test]
+    fn proto_types_implement_serde() {
+        // Plain message
+        assert_serde::<rms::Credentials>();
+
+        // Oneof enum — the case that previously required special handling in build.rs
+        assert_serde::<rms::credentials::Auth>();
+
+        // Top-level enums
+        assert_serde::<rms::NodeType>();
+        assert_serde::<rms::PowerOperation>();
+
+        // Representative request/response pair
+        assert_serde::<rms::SetPowerStateRequest>();
+        assert_serde::<rms::SetPowerStateResponse>();
     }
 }
