@@ -29,6 +29,46 @@ use crate::protos::rack_manager_client::RackManagerApiClient;
 pub mod client;
 pub mod client_config;
 pub mod protos;
+pub mod timestamp_serde {
+    use chrono::{DateTime, Utc};
+    use prost_types::Timestamp;
+    use serde::de::Error as _;
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(value: &Option<Timestamp>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match value {
+            Some(timestamp) => {
+                let dt = DateTime::<Utc>::from_timestamp(timestamp.seconds, timestamp.nanos as u32)
+                    .ok_or_else(|| {
+                        serde::ser::Error::custom("invalid google.protobuf.Timestamp")
+                    })?;
+                serializer.serialize_some(&dt.to_rfc3339())
+            }
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Timestamp>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Option::<String>::deserialize(deserializer)?;
+        value
+            .map(|value| {
+                let dt = DateTime::parse_from_rfc3339(&value)
+                    .map_err(D::Error::custom)?
+                    .with_timezone(&Utc);
+                Ok(Timestamp {
+                    seconds: dt.timestamp(),
+                    nanos: dt.timestamp_subsec_nanos() as i32,
+                })
+            })
+            .transpose()
+    }
+}
 
 #[derive(thiserror::Error, Debug)]
 pub enum RmsTlsClientError {
@@ -201,6 +241,38 @@ pub trait RmsApi: Send + Sync + 'static {
         &self,
         cmd: rms::GetRackFirmwareInventoryRequest,
     ) -> Result<rms::GetRackFirmwareInventoryResponse, RackManagerError>;
+    async fn add_firmware_object(
+        &self,
+        cmd: rms::AddFirmwareObjectRequest,
+    ) -> Result<rms::FirmwareObject, RackManagerError>;
+    async fn get_firmware_object(
+        &self,
+        cmd: rms::GetFirmwareObjectRequest,
+    ) -> Result<rms::FirmwareObject, RackManagerError>;
+    async fn list_firmware_objects(
+        &self,
+        cmd: rms::ListFirmwareObjectsRequest,
+    ) -> Result<rms::ListFirmwareObjectsResponse, RackManagerError>;
+    async fn delete_firmware_object(
+        &self,
+        cmd: rms::DeleteFirmwareObjectRequest,
+    ) -> Result<rms::OperationResponse, RackManagerError>;
+    async fn set_default_firmware_object(
+        &self,
+        cmd: rms::SetDefaultFirmwareObjectRequest,
+    ) -> Result<rms::FirmwareObject, RackManagerError>;
+    async fn apply_firmware_object(
+        &self,
+        cmd: rms::ApplyFirmwareObjectRequest,
+    ) -> Result<rms::ApplyFirmwareObjectResponse, RackManagerError>;
+    async fn apply_switch_system_image(
+        &self,
+        cmd: rms::ApplySwitchSystemImageRequest,
+    ) -> Result<rms::ApplySwitchSystemImageResponse, RackManagerError>;
+    async fn get_firmware_object_history(
+        &self,
+        cmd: rms::GetFirmwareObjectHistoryRequest,
+    ) -> Result<rms::GetFirmwareObjectHistoryResponse, RackManagerError>;
     async fn list_firmware_on_switch(
         &self,
         cmd: rms::ListFirmwareOnSwitchCommand,
@@ -272,10 +344,7 @@ impl RmsApi for RackManagerApi {
         &self,
         cmd: rms::SetPowerStateByDeviceListRequest,
     ) -> Result<rms::SetPowerStateByDeviceListResponse, RackManagerError> {
-        self.client
-            .set_power_state_by_device_list(cmd)
-            .await
-            .map_err(RackManagerError::from)
+        Ok(self.client.set_power_state_by_device_list(cmd).await?)
     }
     async fn get_power_state(
         &self,
@@ -360,6 +429,54 @@ impl RmsApi for RackManagerApi {
         cmd: rms::GetRackFirmwareInventoryRequest,
     ) -> Result<rms::GetRackFirmwareInventoryResponse, RackManagerError> {
         Ok(self.client.get_rack_firmware_inventory(cmd).await?)
+    }
+    async fn add_firmware_object(
+        &self,
+        cmd: rms::AddFirmwareObjectRequest,
+    ) -> Result<rms::FirmwareObject, RackManagerError> {
+        Ok(self.client.add_firmware_object(cmd).await?)
+    }
+    async fn get_firmware_object(
+        &self,
+        cmd: rms::GetFirmwareObjectRequest,
+    ) -> Result<rms::FirmwareObject, RackManagerError> {
+        Ok(self.client.get_firmware_object(cmd).await?)
+    }
+    async fn list_firmware_objects(
+        &self,
+        cmd: rms::ListFirmwareObjectsRequest,
+    ) -> Result<rms::ListFirmwareObjectsResponse, RackManagerError> {
+        Ok(self.client.list_firmware_objects(cmd).await?)
+    }
+    async fn delete_firmware_object(
+        &self,
+        cmd: rms::DeleteFirmwareObjectRequest,
+    ) -> Result<rms::OperationResponse, RackManagerError> {
+        Ok(self.client.delete_firmware_object(cmd).await?)
+    }
+    async fn set_default_firmware_object(
+        &self,
+        cmd: rms::SetDefaultFirmwareObjectRequest,
+    ) -> Result<rms::FirmwareObject, RackManagerError> {
+        Ok(self.client.set_default_firmware_object(cmd).await?)
+    }
+    async fn apply_firmware_object(
+        &self,
+        cmd: rms::ApplyFirmwareObjectRequest,
+    ) -> Result<rms::ApplyFirmwareObjectResponse, RackManagerError> {
+        Ok(self.client.apply_firmware_object(cmd).await?)
+    }
+    async fn apply_switch_system_image(
+        &self,
+        cmd: rms::ApplySwitchSystemImageRequest,
+    ) -> Result<rms::ApplySwitchSystemImageResponse, RackManagerError> {
+        Ok(self.client.apply_switch_system_image(cmd).await?)
+    }
+    async fn get_firmware_object_history(
+        &self,
+        cmd: rms::GetFirmwareObjectHistoryRequest,
+    ) -> Result<rms::GetFirmwareObjectHistoryResponse, RackManagerError> {
+        Ok(self.client.get_firmware_object_history(cmd).await?)
     }
     async fn list_firmware_on_switch(
         &self,

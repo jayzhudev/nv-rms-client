@@ -20,6 +20,7 @@ syntax = "proto3";
 package rack_manager;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 /*******************************************************************************
  * ENUMERATIONS
@@ -419,6 +420,50 @@ service RackManager {
    */
   rpc GetRackFirmwareInventory(GetRackFirmwareInventoryRequest) returns (GetRackFirmwareInventoryResponse) {}
 
+  /*
+   * AddFirmwareObject adds a firmware object catalog entry.
+   *
+   * RMS may download the referenced artifacts asynchronously after accepting
+   * the object. Use GetFirmwareObject or ListFirmwareObjects and check
+   * FirmwareObject.available before applying it.
+   */
+  rpc AddFirmwareObject(AddFirmwareObjectRequest) returns (FirmwareObject) {}
+
+  /*
+   * GetFirmwareObject retrieves one firmware object catalog entry.
+   */
+  rpc GetFirmwareObject(GetFirmwareObjectRequest) returns (FirmwareObject) {}
+
+  /*
+   * ListFirmwareObjects lists firmware object catalog entries.
+   */
+  rpc ListFirmwareObjects(ListFirmwareObjectsRequest) returns (ListFirmwareObjectsResponse) {}
+
+  /*
+   * DeleteFirmwareObject removes one firmware object catalog entry and its local cache.
+   */
+  rpc DeleteFirmwareObject(DeleteFirmwareObjectRequest) returns (OperationResponse) {}
+
+  /*
+   * SetDefaultFirmwareObject marks one firmware object as default for its hardware type.
+   */
+  rpc SetDefaultFirmwareObject(SetDefaultFirmwareObjectRequest) returns (FirmwareObject) {}
+
+  /*
+   * ApplyFirmwareObject resolves stored firmware targets and starts firmware updates for supplied devices.
+   */
+  rpc ApplyFirmwareObject(ApplyFirmwareObjectRequest) returns (ApplyFirmwareObjectResponse) {}
+
+  /*
+   * ApplySwitchSystemImage resolves a stored switch system image and starts updates for supplied switches.
+   */
+  rpc ApplySwitchSystemImage(ApplySwitchSystemImageRequest) returns (ApplySwitchSystemImageResponse) {}
+
+  /*
+   * GetFirmwareObjectHistory lists firmware object apply history.
+   */
+  rpc GetFirmwareObjectHistory(GetFirmwareObjectHistoryRequest) returns (GetFirmwareObjectHistoryResponse) {}
+
 
   /*
    * ListFirmwareOnSwitch lists the firmware for switch.
@@ -755,6 +800,11 @@ message FirmwareTargetList {
   repeated FirmwareTarget targets = 1;
 }
 
+// FirmwareObjectComponentFilter wraps component names for one NodeType key.
+message FirmwareObjectComponentFilter {
+  repeated string components = 1; // Optional component filter for one node type
+}
+
 // UpdateFirmwareRequest initiates a firmware update on a node.
 // Supports single target (filename + target fields) or multiple targets (firmware_targets list).
 // If firmware_targets is non-empty, it takes precedence over the single filename/target fields.
@@ -857,6 +907,158 @@ message GetRackFirmwareInventoryResponse {
   Metadata metadata = 1;
   ReturnCode status = 2;                    // SUCCESS if retrieved, FAILURE otherwise
   repeated NodeFirmwareInventory nodes = 3; // Firmware inventory grouped by node
+}
+
+// FirmwareObject is a managed firmware object catalog entry.
+message FirmwareObject {
+  string id = 1;
+  string config_json = 2;
+  // True when RMS has downloaded all required artifacts and the object is ready to apply.
+  bool available = 3;
+  google.protobuf.Timestamp created = 4;
+  google.protobuf.Timestamp updated = 5;
+  FirmwareObjectMetadata metadata = 6;
+  // Hardware class this object applies to. Defaults are scoped by this value.
+  string hardware_type = 7;
+  bool is_default = 8;
+}
+
+// FirmwareObjectMetadata describes the firmware object content RMS can apply.
+message FirmwareObjectMetadata {
+  repeated FirmwareObjectDeviceComponents device_components = 1;
+  repeated FirmwareObjectSwitchSystemImage switch_system_images = 2;
+}
+
+// FirmwareObjectDeviceComponents groups applyable components by hardware node type.
+message FirmwareObjectDeviceComponents {
+  NodeType node_type = 1;
+  string device_type = 2; // SOT device type label, e.g. "Compute Node", "Switch Tray", "Power Shelf"
+  repeated FirmwareObjectComponent components = 3;
+}
+
+// FirmwareObjectComponent describes one normalized component clients can request.
+message FirmwareObjectComponent {
+  string name = 1;           // Normalized component name accepted by ApplyFirmwareObject
+  string version = 2;
+  string bundle = 3;         // Source bundle/package label from the firmware object
+  string source_component = 4; // Raw component label from the firmware object
+  repeated FirmwareObjectSubcomponent subcomponents = 5;
+  repeated FirmwareObjectArtifact artifacts = 6;
+}
+
+message FirmwareObjectSubcomponent {
+  string name = 1;
+  string version = 2;
+  string sku_id = 3;
+}
+
+// FirmwareObjectArtifact describes the local artifact RMS resolved for a component.
+message FirmwareObjectArtifact {
+  string firmware_type = 1; // Artifact channel/profile, e.g. "dev" or "prod"
+  string filename = 2;      // Cached artifact filename
+  string target = 3;        // Firmware target RMS passes to the node update API
+}
+
+// FirmwareObjectSwitchSystemImage describes a switch system-image artifact.
+message FirmwareObjectSwitchSystemImage {
+  string software_type = 1; // Software channel/profile, e.g. "dev" or "prod"
+  string version = 2;
+  string package_name = 3;
+  string image_filename = 4;
+  bool required = 5;
+}
+
+// AddFirmwareObjectRequest adds firmware object config and authorizes RMS artifact download.
+message AddFirmwareObjectRequest {
+  Metadata metadata = 1;
+  string config_json = 2;
+  // Used only for immediate/background artifact download; RMS does not persist this token.
+  string artifactory_token = 3;
+  string hardware_type = 4;
+  // If true, mark this object as default for hardware_type after add.
+  bool set_default = 5;
+}
+
+message GetFirmwareObjectRequest {
+  Metadata metadata = 1;
+  string id = 2;
+}
+
+message ListFirmwareObjectsRequest {
+  Metadata metadata = 1;
+  bool only_available = 2;
+  string hardware_type = 3;
+}
+
+message ListFirmwareObjectsResponse {
+  repeated FirmwareObject objects = 1;
+}
+
+message DeleteFirmwareObjectRequest {
+  Metadata metadata = 1;
+  string id = 2;
+}
+
+message SetDefaultFirmwareObjectRequest {
+  Metadata metadata = 1;
+  // Default scope is determined by the hardware_type stored on this object.
+  string object_id = 2;
+}
+
+message ApplyFirmwareObjectRequest {
+  Metadata metadata = 1;
+  string rack_id = 2;
+  string object_id = 3;          // Empty means use default for hardware_type
+  string firmware_type = 4;        // "dev" or "prod"
+  string hardware_type = 5;
+  repeated string components = 6;  // Deprecated: global component filter for all node types
+  NodeSet nodes = 7;               // Caller-supplied devices
+  bool force_update = 8;
+  // Component filters keyed by NodeType. If non-empty, only listed node types are updated.
+  // A listed node type with an empty components list means all components for that node type.
+  map<int32, FirmwareObjectComponentFilter> component_filters = 9;
+}
+
+message ApplyFirmwareObjectResponse {
+  NodeBatchResponse response = 1;          // response.job_id is parent job id
+  string object_id = 2;
+  repeated NodeFirmwareJobInfo node_jobs = 3;
+}
+
+message ApplySwitchSystemImageRequest {
+  Metadata metadata = 1;
+  string rack_id = 2;
+  string object_id = 3;    // Empty means use default for hardware_type
+  string software_type = 4; // "dev" or "prod"
+  string hardware_type = 5;
+  NodeSet nodes = 6;         // Caller-supplied switch devices
+}
+
+message ApplySwitchSystemImageResponse {
+  NodeBatchResponse response = 1;                       // response.job_id is parent job id
+  string object_id = 2;
+  string image_filename = 3;
+  repeated SwitchSystemImageUpdateJobInfo node_jobs = 4;
+}
+
+message GetFirmwareObjectHistoryRequest {
+  Metadata metadata = 1;
+  string object_id = 2;       // Empty means no object filter
+  repeated string rack_ids = 3; // Empty means all racks
+}
+
+message GetFirmwareObjectHistoryResponse {
+  repeated FirmwareObjectHistoryRecord records = 1;
+}
+
+message FirmwareObjectHistoryRecord {
+  string object_id = 1;
+  string rack_id = 2;
+  string firmware_type = 3;
+  google.protobuf.Timestamp applied_at = 4;
+  bool firmware_available = 5;
+  string hardware_type = 6;
+  repeated string node_ids = 7;
 }
 
 /*******************************************************************************
