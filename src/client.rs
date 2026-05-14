@@ -186,9 +186,8 @@ impl<'a> RmsApiConfig<'a> {
     // own RetryConfig beyond the default.
     pub fn with_retry_config(self, retry_config: RetryConfig) -> Self {
         Self {
-            url: self.url,
-            client_config: self.client_config,
             retry_config,
+            ..self
         }
     }
 
@@ -380,10 +379,6 @@ impl<'a> RmsTlsClient<'a> {
                 );
             });
 
-        match result {
-            Ok(Ok(client)) => Ok(client),
-            Ok(Err(e)) => Err(e),
-            Err(e) => Err(e),
-        }
+        result.flatten()
     }
 }

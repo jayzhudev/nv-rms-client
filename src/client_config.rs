@@ -20,6 +20,10 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
 use crate::{ConfigurationError, RmsTlsClientError};
 
+const SPIFFE_CERT: &str = "/var/run/secrets/spiffe.io/tls.crt";
+const SPIFFE_KEY: &str = "/var/run/secrets/spiffe.io/tls.key";
+const SPIFFE_CA: &str = "/var/run/secrets/spiffe.io/ca.crt";
+
 #[derive(thiserror::Error, Debug)]
 pub enum ClientConfigError {
     #[error("Unable to parse url: {0}")]
@@ -63,12 +67,10 @@ pub fn rms_client_cert_info(
     }
 
     // this is the location for most k8s pods
-    if Path::new("/var/run/secrets/spiffe.io/tls.crt").exists()
-        && Path::new("/var/run/secrets/spiffe.io/tls.key").exists()
-    {
+    if Path::new(SPIFFE_CERT).exists() && Path::new(SPIFFE_KEY).exists() {
         return Some(ClientCert {
-            cert_path: "/var/run/secrets/spiffe.io/tls.crt".to_string(),
-            key_path: "/var/run/secrets/spiffe.io/tls.key".to_string(),
+            cert_path: SPIFFE_CERT.to_string(),
+            key_path: SPIFFE_KEY.to_string(),
         });
     }
 
@@ -86,8 +88,8 @@ pub fn rms_root_ca_info(rms_root_ca_path: Option<String>) -> Option<String> {
     }
 
     // this is the location for most k8s pods
-    if Path::new("/var/run/secrets/spiffe.io/ca.crt").exists() {
-        return Some("/var/run/secrets/spiffe.io/ca.crt".to_string());
+    if Path::new(SPIFFE_CA).exists() {
+        return Some(SPIFFE_CA.to_string());
     }
 
     None
@@ -133,17 +135,12 @@ impl RmsClientConfig {
     ) -> Result<(Vec<CertificateDer<'static>>, PrivateKeyDer<'static>), RmsTlsClientError> {
         if let Some(client_cert) = self.client_cert.as_ref() {
             let certs = {
-                let fd = match std::fs::File::open(&client_cert.cert_path) {
-                    Ok(fd) => fd,
-                    Err(e) => {
-                        return Err(RmsTlsClientError::Configuration(
-                            ConfigurationError::CouldNotReadClientCert {
-                                path: client_cert.cert_path.clone(),
-                                error: e,
-                            },
-                        ));
-                    }
-                };
+                let fd = std::fs::File::open(&client_cert.cert_path).map_err(|e| {
+                    RmsTlsClientError::Configuration(ConfigurationError::CouldNotReadClientCert {
+                        path: client_cert.cert_path.clone(),
+                        error: e,
+                    })
+                })?;
                 let mut buf = std::io::BufReader::new(&fd);
 
                 let mut errors = vec![];
@@ -180,17 +177,12 @@ impl RmsClientConfig {
             };
 
             let key = {
-                let fd = match std::fs::File::open(&client_cert.key_path) {
-                    Ok(fd) => fd,
-                    Err(e) => {
-                        return Err(RmsTlsClientError::Configuration(
-                            ConfigurationError::CouldNotReadClientKey {
-                                path: client_cert.key_path.clone(),
-                                error: e,
-                            },
-                        ));
-                    }
-                };
+                let fd = std::fs::File::open(&client_cert.key_path).map_err(|e| {
+                    RmsTlsClientError::Configuration(ConfigurationError::CouldNotReadClientKey {
+                        path: client_cert.key_path.clone(),
+                        error: e,
+                    })
+                })?;
                 let mut buf = std::io::BufReader::new(&fd);
 
                 use rustls_pemfile::Item;
@@ -238,17 +230,12 @@ impl RmsClientConfig {
     pub fn read_root_ca(&self) -> Result<RootCertStore, RmsTlsClientError> {
         if let Some(root_ca_path) = &self.root_ca_path {
             let mut roots = RootCertStore::empty();
-            let fd = match std::fs::File::open(root_ca_path) {
-                Ok(fd) => fd,
-                Err(e) => {
-                    return Err(RmsTlsClientError::Configuration(
-                        ConfigurationError::CouldNotReadRootCa {
-                            path: root_ca_path.to_string(),
-                            error: e,
-                        },
-                    ));
-                }
-            };
+            let fd = std::fs::File::open(root_ca_path).map_err(|e| {
+                RmsTlsClientError::Configuration(ConfigurationError::CouldNotReadRootCa {
+                    path: root_ca_path.to_string(),
+                    error: e,
+                })
+            })?;
             let mut buf = std::io::BufReader::new(&fd);
             let mut errors = vec![];
 
