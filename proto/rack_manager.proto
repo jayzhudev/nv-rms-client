@@ -542,7 +542,8 @@ service RackManager {
 
   /*---------------------------------------------------------------------------
    * Switch Control RPCs
-   * Credentials are resolved from the node's stored inventory data.
+   * Connection settings, credentials, port, and TLS validation behavior are
+   * resolved from the node's stored inventory data.
    *-------------------------------------------------------------------------*/
 
   /*
@@ -863,11 +864,8 @@ message NodeFirmwareJobInfo {
 
 // BatchUpdateFirmwareByNodeTypeResponse reports the created async jobs.
 message BatchUpdateFirmwareByNodeTypeResponse {
-  ReturnCode status = 2;                            // RETURN_CODE_SUCCESS if jobs created, RETURN_CODE_FAILURE otherwise
-  string message = 3;                               // Human-readable summary message
-  string job_id = 4;                                // Parent job ID for the overall batch (use with GetFirmwareJobStatus)
-  repeated NodeFirmwareJobInfo jobs = 6;            // Individual job ID per node
-  NodeOperationStats stats = 7;                     // Aggregate job creation counts
+  NodeBatchResponse response = 1;
+  repeated NodeFirmwareJobInfo jobs = 2; // Individual job ID per node
 }
 
 // BatchUpdateFirmwareRequest initiates firmware updates on a specified list of nodes.
@@ -1185,7 +1183,8 @@ message GetScaleUpFabricStateResponse {
  * SWITCH CONTROL MESSAGES
  *
  * These messages are used for managing NVIDIA network switches via API.
- * Credentials are resolved from the node's stored inventory data.
+ * Connection settings, credentials, port, and TLS validation behavior are
+ * resolved from the node's stored inventory data.
  ******************************************************************************/
 
 // FetchSwitchSystemImageRequest downloads an OS image to a switch.
