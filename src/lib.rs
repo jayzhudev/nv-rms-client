@@ -178,35 +178,36 @@ pub trait RmsApi: Send + Sync + 'static {
         &self,
         cmd: rms::SetPowerStateRequest,
     ) -> Result<rms::SetPowerStateResponse, RackManagerError>;
-    async fn set_power_state_by_node_list(
+    async fn batch_set_power_state(
         &self,
-        cmd: rms::SetPowerStateByNodeListRequest,
-    ) -> Result<rms::SetPowerStateByNodeListResponse, RackManagerError>;
+        cmd: rms::BatchSetPowerStateRequest,
+    ) -> Result<rms::BatchSetPowerStateResponse, RackManagerError>;
     async fn get_power_state(
         &self,
         cmd: rms::GetPowerStateRequest,
     ) -> Result<rms::GetPowerStateResponse, RackManagerError>;
-    async fn get_power_state_by_node_list(
+    async fn batch_get_power_state(
         &self,
-        cmd: rms::GetPowerStateByNodeListRequest,
-    ) -> Result<rms::GetPowerStateByNodeListResponse, RackManagerError>;
+        cmd: rms::BatchGetPowerStateRequest,
+    ) -> Result<rms::BatchGetPowerStateResponse, RackManagerError>;
     async fn sequence_rack_power(
         &self,
         cmd: rms::SequenceRackPowerRequest,
     ) -> Result<rms::SequenceRackPowerResponse, RackManagerError>;
-    async fn get_all_inventory(&self) -> Result<rms::GetAllInventoryResponse, RackManagerError>;
-    async fn add_node(
+    async fn list_node_inventory(&self)
+    -> Result<rms::ListNodeInventoryResponse, RackManagerError>;
+    async fn create_nodes(
         &self,
-        cmd: rms::AddNodeRequest,
-    ) -> Result<rms::AddNodeResponse, RackManagerError>;
+        cmd: rms::CreateNodesRequest,
+    ) -> Result<rms::CreateNodesResponse, RackManagerError>;
     async fn update_node(
         &self,
         cmd: rms::UpdateNodeRequest,
     ) -> Result<rms::UpdateNodeResponse, RackManagerError>;
-    async fn remove_node(
+    async fn delete_node(
         &self,
-        cmd: rms::RemoveNodeRequest,
-    ) -> Result<rms::RemoveNodeResponse, RackManagerError>;
+        cmd: rms::DeleteNodeRequest,
+    ) -> Result<rms::DeleteNodeResponse, RackManagerError>;
     async fn get_rack_power_on_sequence(
         &self,
         cmd: rms::GetRackPowerOnSequenceRequest,
@@ -220,14 +221,14 @@ pub trait RmsApi: Send + Sync + 'static {
         &self,
         cmd: rms::GetNodeDeviceInfoRequest,
     ) -> Result<rms::GetNodeDeviceInfoResponse, RackManagerError>;
-    async fn get_device_info_by_node_type(
+    async fn list_node_device_info_by_node_type(
         &self,
-        cmd: rms::GetDeviceInfoByNodeTypeRequest,
-    ) -> Result<rms::GetDeviceInfoByNodeTypeResponse, RackManagerError>;
-    async fn get_device_info_by_node_list(
+        cmd: rms::ListNodeDeviceInfoByNodeTypeRequest,
+    ) -> Result<rms::ListNodeDeviceInfoByNodeTypeResponse, RackManagerError>;
+    async fn batch_get_node_device_info(
         &self,
-        cmd: rms::GetDeviceInfoByNodeListRequest,
-    ) -> Result<rms::GetDeviceInfoByNodeListResponse, RackManagerError>;
+        cmd: rms::BatchGetNodeDeviceInfoRequest,
+    ) -> Result<rms::BatchGetNodeDeviceInfoResponse, RackManagerError>;
     async fn get_node_firmware_inventory(
         &self,
         cmd: rms::GetNodeFirmwareInventoryRequest,
@@ -236,14 +237,30 @@ pub trait RmsApi: Send + Sync + 'static {
         &self,
         cmd: rms::GetRackFirmwareInventoryRequest,
     ) -> Result<rms::GetRackFirmwareInventoryResponse, RackManagerError>;
+    async fn update_firmware(
+        &self,
+        cmd: rms::UpdateFirmwareRequest,
+    ) -> Result<rms::UpdateFirmwareResponse, RackManagerError>;
+    async fn batch_update_firmware_by_node_type(
+        &self,
+        cmd: rms::BatchUpdateFirmwareByNodeTypeRequest,
+    ) -> Result<rms::BatchUpdateFirmwareByNodeTypeResponse, RackManagerError>;
+    async fn batch_update_firmware(
+        &self,
+        cmd: rms::BatchUpdateFirmwareRequest,
+    ) -> Result<rms::BatchUpdateFirmwareResponse, RackManagerError>;
+    async fn update_switch_system_image(
+        &self,
+        cmd: rms::UpdateSwitchSystemImageRequest,
+    ) -> Result<rms::UpdateSwitchSystemImageResponse, RackManagerError>;
     async fn add_firmware_object(
         &self,
         cmd: rms::AddFirmwareObjectRequest,
-    ) -> Result<rms::FirmwareObject, RackManagerError>;
+    ) -> Result<rms::AddFirmwareObjectResponse, RackManagerError>;
     async fn get_firmware_object(
         &self,
         cmd: rms::GetFirmwareObjectRequest,
-    ) -> Result<rms::FirmwareObject, RackManagerError>;
+    ) -> Result<rms::GetFirmwareObjectResponse, RackManagerError>;
     async fn list_firmware_objects(
         &self,
         cmd: rms::ListFirmwareObjectsRequest,
@@ -251,59 +268,63 @@ pub trait RmsApi: Send + Sync + 'static {
     async fn delete_firmware_object(
         &self,
         cmd: rms::DeleteFirmwareObjectRequest,
-    ) -> Result<rms::OperationResponse, RackManagerError>;
+    ) -> Result<rms::DeleteFirmwareObjectResponse, RackManagerError>;
     async fn set_default_firmware_object(
         &self,
         cmd: rms::SetDefaultFirmwareObjectRequest,
-    ) -> Result<rms::FirmwareObject, RackManagerError>;
+    ) -> Result<rms::SetDefaultFirmwareObjectResponse, RackManagerError>;
+    async fn apply_stored_firmware_object(
+        &self,
+        cmd: rms::ApplyStoredFirmwareObjectRequest,
+    ) -> Result<rms::ApplyStoredFirmwareObjectResponse, RackManagerError>;
     async fn apply_firmware_object(
         &self,
         cmd: rms::ApplyFirmwareObjectRequest,
     ) -> Result<rms::ApplyFirmwareObjectResponse, RackManagerError>;
-    async fn apply_firmware_object_from_json(
-        &self,
-        cmd: rms::ApplyFirmwareObjectFromJsonRequest,
-    ) -> Result<rms::ApplyFirmwareObjectFromJsonResponse, RackManagerError>;
-    async fn apply_switch_system_image_from_json(
-        &self,
-        cmd: rms::ApplySwitchSystemImageFromJsonRequest,
-    ) -> Result<rms::ApplySwitchSystemImageFromJsonResponse, RackManagerError>;
     async fn apply_switch_system_image(
         &self,
         cmd: rms::ApplySwitchSystemImageRequest,
     ) -> Result<rms::ApplySwitchSystemImageResponse, RackManagerError>;
+    async fn apply_stored_switch_system_image(
+        &self,
+        cmd: rms::ApplyStoredSwitchSystemImageRequest,
+    ) -> Result<rms::ApplyStoredSwitchSystemImageResponse, RackManagerError>;
     async fn get_firmware_object_history(
         &self,
         cmd: rms::GetFirmwareObjectHistoryRequest,
     ) -> Result<rms::GetFirmwareObjectHistoryResponse, RackManagerError>;
-    async fn list_firmware_on_switch(
+    async fn list_switch_firmware(
         &self,
-        cmd: rms::ListFirmwareOnSwitchRequest,
-    ) -> Result<rms::ListFirmwareOnSwitchResponse, RackManagerError>;
-    async fn push_firmware_to_switch(
+        cmd: rms::ListSwitchFirmwareRequest,
+    ) -> Result<rms::ListSwitchFirmwareResponse, RackManagerError>;
+    async fn push_switch_firmware(
         &self,
-        cmd: rms::PushFirmwareToSwitchRequest,
-    ) -> Result<rms::PushFirmwareToSwitchResponse, RackManagerError>;
-    async fn upgrade_firmware_on_switch(
+        cmd: rms::PushSwitchFirmwareRequest,
+    ) -> Result<rms::PushSwitchFirmwareResponse, RackManagerError>;
+    async fn upgrade_switch_firmware(
         &self,
-        cmd: rms::UpgradeFirmwareOnSwitchRequest,
-    ) -> Result<rms::UpgradeFirmwareOnSwitchResponse, RackManagerError>;
+        cmd: rms::UpgradeSwitchFirmwareRequest,
+    ) -> Result<rms::UpgradeSwitchFirmwareResponse, RackManagerError>;
     async fn configure_scale_up_fabric_manager(
         &self,
         cmd: rms::ConfigureScaleUpFabricManagerRequest,
     ) -> Result<rms::ConfigureScaleUpFabricManagerResponse, RackManagerError>;
-    async fn set_scale_up_fabric_state(
+    async fn batch_set_scale_up_fabric_state(
         &self,
-        cmd: rms::SetScaleUpFabricStateRequest,
-    ) -> Result<rms::SetScaleUpFabricStateResponse, RackManagerError>;
-    async fn get_scale_up_fabric_services_status(
+        cmd: rms::BatchSetScaleUpFabricStateRequest,
+    ) -> Result<rms::BatchSetScaleUpFabricStateResponse, RackManagerError>;
+    async fn batch_get_scale_up_fabric_service_status(
         &self,
-        cmd: rms::GetScaleUpFabricServicesStatusRequest,
-    ) -> Result<rms::GetScaleUpFabricServicesStatusResponse, RackManagerError>;
+        cmd: rms::BatchGetScaleUpFabricServiceStatusRequest,
+    ) -> Result<rms::BatchGetScaleUpFabricServiceStatusResponse, RackManagerError>;
     async fn get_scale_up_fabric_state(
         &self,
         cmd: rms::GetScaleUpFabricStateRequest,
     ) -> Result<rms::GetScaleUpFabricStateResponse, RackManagerError>;
+    async fn set_scale_up_fabric_telemetry_interface_state(
+        &self,
+        cmd: rms::SetScaleUpFabricTelemetryInterfaceStateRequest,
+    ) -> Result<rms::SetScaleUpFabricTelemetryInterfaceStateResponse, RackManagerError>;
     async fn fetch_switch_system_image(
         &self,
         cmd: rms::FetchSwitchSystemImageRequest,
@@ -320,39 +341,19 @@ pub trait RmsApi: Send + Sync + 'static {
         &self,
         cmd: rms::GetSwitchSystemImageJobStatusRequest,
     ) -> Result<rms::GetSwitchSystemImageJobStatusResponse, RackManagerError>;
-    async fn enable_scale_up_fabric_telemetry_interface(
-        &self,
-        cmd: rms::EnableScaleUpFabricTelemetryInterfaceRequest,
-    ) -> Result<rms::EnableScaleUpFabricTelemetryInterfaceResponse, RackManagerError>;
-    async fn version(&self) -> Result<rms::VersionResponse, RackManagerError>;
-    async fn poll_job_status(
-        &self,
-        cmd: rms::PollJobStatusRequest,
-    ) -> Result<rms::PollJobStatusResponse, RackManagerError>;
-    async fn update_node_firmware_async(
-        &self,
-        cmd: rms::UpdateNodeFirmwareAsyncRequest,
-    ) -> Result<rms::UpdateNodeFirmwareAsyncResponse, RackManagerError>;
-    async fn update_firmware_by_node_type_async(
-        &self,
-        cmd: rms::UpdateFirmwareByNodeTypeAsyncRequest,
-    ) -> Result<rms::UpdateFirmwareByNodeTypeAsyncResponse, RackManagerError>;
-    async fn update_firmware_by_node_list(
-        &self,
-        cmd: rms::UpdateFirmwareByNodeListRequest,
-    ) -> Result<rms::UpdateFirmwareByNodeListResponse, RackManagerError>;
-    async fn update_switch_system_image(
-        &self,
-        cmd: rms::UpdateSwitchSystemImageRequest,
-    ) -> Result<rms::UpdateSwitchSystemImageResponse, RackManagerError>;
-    async fn get_firmware_job_status(
-        &self,
-        cmd: rms::GetFirmwareJobStatusRequest,
-    ) -> Result<rms::GetFirmwareJobStatusResponse, RackManagerError>;
     async fn update_switch_system_password(
         &self,
         cmd: rms::UpdateSwitchSystemPasswordRequest,
     ) -> Result<rms::UpdateSwitchSystemPasswordResponse, RackManagerError>;
+    async fn get_version(&self) -> Result<rms::GetVersionResponse, RackManagerError>;
+    async fn poll_switch_firmware_job_status(
+        &self,
+        cmd: rms::PollSwitchFirmwareJobStatusRequest,
+    ) -> Result<rms::PollSwitchFirmwareJobStatusResponse, RackManagerError>;
+    async fn get_firmware_job_status(
+        &self,
+        cmd: rms::GetFirmwareJobStatusRequest,
+    ) -> Result<rms::GetFirmwareJobStatusResponse, RackManagerError>;
 }
 
 #[async_trait::async_trait]
@@ -363,11 +364,11 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::SetPowerStateResponse, RackManagerError> {
         Ok(self.client.set_power_state(cmd).await?)
     }
-    async fn set_power_state_by_node_list(
+    async fn batch_set_power_state(
         &self,
-        cmd: rms::SetPowerStateByNodeListRequest,
-    ) -> Result<rms::SetPowerStateByNodeListResponse, RackManagerError> {
-        Ok(self.client.set_power_state_by_node_list(cmd).await?)
+        cmd: rms::BatchSetPowerStateRequest,
+    ) -> Result<rms::BatchSetPowerStateResponse, RackManagerError> {
+        Ok(self.client.batch_set_power_state(cmd).await?)
     }
     async fn get_power_state(
         &self,
@@ -375,11 +376,11 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::GetPowerStateResponse, RackManagerError> {
         Ok(self.client.get_power_state(cmd).await?)
     }
-    async fn get_power_state_by_node_list(
+    async fn batch_get_power_state(
         &self,
-        cmd: rms::GetPowerStateByNodeListRequest,
-    ) -> Result<rms::GetPowerStateByNodeListResponse, RackManagerError> {
-        Ok(self.client.get_power_state_by_node_list(cmd).await?)
+        cmd: rms::BatchGetPowerStateRequest,
+    ) -> Result<rms::BatchGetPowerStateResponse, RackManagerError> {
+        Ok(self.client.batch_get_power_state(cmd).await?)
     }
     async fn sequence_rack_power(
         &self,
@@ -387,14 +388,16 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::SequenceRackPowerResponse, RackManagerError> {
         Ok(self.client.sequence_rack_power(cmd).await?)
     }
-    async fn get_all_inventory(&self) -> Result<rms::GetAllInventoryResponse, RackManagerError> {
-        Ok(self.client.get_all_inventory().await?)
-    }
-    async fn add_node(
+    async fn list_node_inventory(
         &self,
-        cmd: rms::AddNodeRequest,
-    ) -> Result<rms::AddNodeResponse, RackManagerError> {
-        Ok(self.client.add_node(cmd).await?)
+    ) -> Result<rms::ListNodeInventoryResponse, RackManagerError> {
+        Ok(self.client.list_node_inventory().await?)
+    }
+    async fn create_nodes(
+        &self,
+        cmd: rms::CreateNodesRequest,
+    ) -> Result<rms::CreateNodesResponse, RackManagerError> {
+        Ok(self.client.create_nodes(cmd).await?)
     }
     async fn update_node(
         &self,
@@ -402,11 +405,11 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::UpdateNodeResponse, RackManagerError> {
         Ok(self.client.update_node(cmd).await?)
     }
-    async fn remove_node(
+    async fn delete_node(
         &self,
-        cmd: rms::RemoveNodeRequest,
-    ) -> Result<rms::RemoveNodeResponse, RackManagerError> {
-        Ok(self.client.remove_node(cmd).await?)
+        cmd: rms::DeleteNodeRequest,
+    ) -> Result<rms::DeleteNodeResponse, RackManagerError> {
+        Ok(self.client.delete_node(cmd).await?)
     }
     async fn get_rack_power_on_sequence(
         &self,
@@ -429,17 +432,17 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::GetNodeDeviceInfoResponse, RackManagerError> {
         Ok(self.client.get_node_device_info(cmd).await?)
     }
-    async fn get_device_info_by_node_type(
+    async fn list_node_device_info_by_node_type(
         &self,
-        cmd: rms::GetDeviceInfoByNodeTypeRequest,
-    ) -> Result<rms::GetDeviceInfoByNodeTypeResponse, RackManagerError> {
-        Ok(self.client.get_device_info_by_node_type(cmd).await?)
+        cmd: rms::ListNodeDeviceInfoByNodeTypeRequest,
+    ) -> Result<rms::ListNodeDeviceInfoByNodeTypeResponse, RackManagerError> {
+        Ok(self.client.list_node_device_info_by_node_type(cmd).await?)
     }
-    async fn get_device_info_by_node_list(
+    async fn batch_get_node_device_info(
         &self,
-        cmd: rms::GetDeviceInfoByNodeListRequest,
-    ) -> Result<rms::GetDeviceInfoByNodeListResponse, RackManagerError> {
-        Ok(self.client.get_device_info_by_node_list(cmd).await?)
+        cmd: rms::BatchGetNodeDeviceInfoRequest,
+    ) -> Result<rms::BatchGetNodeDeviceInfoResponse, RackManagerError> {
+        Ok(self.client.batch_get_node_device_info(cmd).await?)
     }
     async fn get_node_firmware_inventory(
         &self,
@@ -453,16 +456,40 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::GetRackFirmwareInventoryResponse, RackManagerError> {
         Ok(self.client.get_rack_firmware_inventory(cmd).await?)
     }
+    async fn update_firmware(
+        &self,
+        cmd: rms::UpdateFirmwareRequest,
+    ) -> Result<rms::UpdateFirmwareResponse, RackManagerError> {
+        Ok(self.client.update_firmware(cmd).await?)
+    }
+    async fn batch_update_firmware_by_node_type(
+        &self,
+        cmd: rms::BatchUpdateFirmwareByNodeTypeRequest,
+    ) -> Result<rms::BatchUpdateFirmwareByNodeTypeResponse, RackManagerError> {
+        Ok(self.client.batch_update_firmware_by_node_type(cmd).await?)
+    }
+    async fn batch_update_firmware(
+        &self,
+        cmd: rms::BatchUpdateFirmwareRequest,
+    ) -> Result<rms::BatchUpdateFirmwareResponse, RackManagerError> {
+        Ok(self.client.batch_update_firmware(cmd).await?)
+    }
+    async fn update_switch_system_image(
+        &self,
+        cmd: rms::UpdateSwitchSystemImageRequest,
+    ) -> Result<rms::UpdateSwitchSystemImageResponse, RackManagerError> {
+        Ok(self.client.update_switch_system_image(cmd).await?)
+    }
     async fn add_firmware_object(
         &self,
         cmd: rms::AddFirmwareObjectRequest,
-    ) -> Result<rms::FirmwareObject, RackManagerError> {
+    ) -> Result<rms::AddFirmwareObjectResponse, RackManagerError> {
         Ok(self.client.add_firmware_object(cmd).await?)
     }
     async fn get_firmware_object(
         &self,
         cmd: rms::GetFirmwareObjectRequest,
-    ) -> Result<rms::FirmwareObject, RackManagerError> {
+    ) -> Result<rms::GetFirmwareObjectResponse, RackManagerError> {
         Ok(self.client.get_firmware_object(cmd).await?)
     }
     async fn list_firmware_objects(
@@ -474,14 +501,20 @@ impl RmsApi for RackManagerApi {
     async fn delete_firmware_object(
         &self,
         cmd: rms::DeleteFirmwareObjectRequest,
-    ) -> Result<rms::OperationResponse, RackManagerError> {
+    ) -> Result<rms::DeleteFirmwareObjectResponse, RackManagerError> {
         Ok(self.client.delete_firmware_object(cmd).await?)
     }
     async fn set_default_firmware_object(
         &self,
         cmd: rms::SetDefaultFirmwareObjectRequest,
-    ) -> Result<rms::FirmwareObject, RackManagerError> {
+    ) -> Result<rms::SetDefaultFirmwareObjectResponse, RackManagerError> {
         Ok(self.client.set_default_firmware_object(cmd).await?)
+    }
+    async fn apply_stored_firmware_object(
+        &self,
+        cmd: rms::ApplyStoredFirmwareObjectRequest,
+    ) -> Result<rms::ApplyStoredFirmwareObjectResponse, RackManagerError> {
+        Ok(self.client.apply_stored_firmware_object(cmd).await?)
     }
     async fn apply_firmware_object(
         &self,
@@ -489,23 +522,17 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::ApplyFirmwareObjectResponse, RackManagerError> {
         Ok(self.client.apply_firmware_object(cmd).await?)
     }
-    async fn apply_firmware_object_from_json(
-        &self,
-        cmd: rms::ApplyFirmwareObjectFromJsonRequest,
-    ) -> Result<rms::ApplyFirmwareObjectFromJsonResponse, RackManagerError> {
-        Ok(self.client.apply_firmware_object_from_json(cmd).await?)
-    }
-    async fn apply_switch_system_image_from_json(
-        &self,
-        cmd: rms::ApplySwitchSystemImageFromJsonRequest,
-    ) -> Result<rms::ApplySwitchSystemImageFromJsonResponse, RackManagerError> {
-        Ok(self.client.apply_switch_system_image_from_json(cmd).await?)
-    }
     async fn apply_switch_system_image(
         &self,
         cmd: rms::ApplySwitchSystemImageRequest,
     ) -> Result<rms::ApplySwitchSystemImageResponse, RackManagerError> {
         Ok(self.client.apply_switch_system_image(cmd).await?)
+    }
+    async fn apply_stored_switch_system_image(
+        &self,
+        cmd: rms::ApplyStoredSwitchSystemImageRequest,
+    ) -> Result<rms::ApplyStoredSwitchSystemImageResponse, RackManagerError> {
+        Ok(self.client.apply_stored_switch_system_image(cmd).await?)
     }
     async fn get_firmware_object_history(
         &self,
@@ -513,23 +540,23 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::GetFirmwareObjectHistoryResponse, RackManagerError> {
         Ok(self.client.get_firmware_object_history(cmd).await?)
     }
-    async fn list_firmware_on_switch(
+    async fn list_switch_firmware(
         &self,
-        cmd: rms::ListFirmwareOnSwitchRequest,
-    ) -> Result<rms::ListFirmwareOnSwitchResponse, RackManagerError> {
-        Ok(self.client.list_firmware_on_switch(cmd).await?)
+        cmd: rms::ListSwitchFirmwareRequest,
+    ) -> Result<rms::ListSwitchFirmwareResponse, RackManagerError> {
+        Ok(self.client.list_switch_firmware(cmd).await?)
     }
-    async fn push_firmware_to_switch(
+    async fn push_switch_firmware(
         &self,
-        cmd: rms::PushFirmwareToSwitchRequest,
-    ) -> Result<rms::PushFirmwareToSwitchResponse, RackManagerError> {
-        Ok(self.client.push_firmware_to_switch(cmd).await?)
+        cmd: rms::PushSwitchFirmwareRequest,
+    ) -> Result<rms::PushSwitchFirmwareResponse, RackManagerError> {
+        Ok(self.client.push_switch_firmware(cmd).await?)
     }
-    async fn upgrade_firmware_on_switch(
+    async fn upgrade_switch_firmware(
         &self,
-        cmd: rms::UpgradeFirmwareOnSwitchRequest,
-    ) -> Result<rms::UpgradeFirmwareOnSwitchResponse, RackManagerError> {
-        Ok(self.client.upgrade_firmware_on_switch(cmd).await?)
+        cmd: rms::UpgradeSwitchFirmwareRequest,
+    ) -> Result<rms::UpgradeSwitchFirmwareResponse, RackManagerError> {
+        Ok(self.client.upgrade_switch_firmware(cmd).await?)
     }
     async fn configure_scale_up_fabric_manager(
         &self,
@@ -537,23 +564,35 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::ConfigureScaleUpFabricManagerResponse, RackManagerError> {
         Ok(self.client.configure_scale_up_fabric_manager(cmd).await?)
     }
-    async fn set_scale_up_fabric_state(
+    async fn batch_set_scale_up_fabric_state(
         &self,
-        cmd: rms::SetScaleUpFabricStateRequest,
-    ) -> Result<rms::SetScaleUpFabricStateResponse, RackManagerError> {
-        Ok(self.client.set_scale_up_fabric_state(cmd).await?)
+        cmd: rms::BatchSetScaleUpFabricStateRequest,
+    ) -> Result<rms::BatchSetScaleUpFabricStateResponse, RackManagerError> {
+        Ok(self.client.batch_set_scale_up_fabric_state(cmd).await?)
     }
-    async fn get_scale_up_fabric_services_status(
+    async fn batch_get_scale_up_fabric_service_status(
         &self,
-        cmd: rms::GetScaleUpFabricServicesStatusRequest,
-    ) -> Result<rms::GetScaleUpFabricServicesStatusResponse, RackManagerError> {
-        Ok(self.client.get_scale_up_fabric_services_status(cmd).await?)
+        cmd: rms::BatchGetScaleUpFabricServiceStatusRequest,
+    ) -> Result<rms::BatchGetScaleUpFabricServiceStatusResponse, RackManagerError> {
+        Ok(self
+            .client
+            .batch_get_scale_up_fabric_service_status(cmd)
+            .await?)
     }
     async fn get_scale_up_fabric_state(
         &self,
         cmd: rms::GetScaleUpFabricStateRequest,
     ) -> Result<rms::GetScaleUpFabricStateResponse, RackManagerError> {
         Ok(self.client.get_scale_up_fabric_state(cmd).await?)
+    }
+    async fn set_scale_up_fabric_telemetry_interface_state(
+        &self,
+        cmd: rms::SetScaleUpFabricTelemetryInterfaceStateRequest,
+    ) -> Result<rms::SetScaleUpFabricTelemetryInterfaceStateResponse, RackManagerError> {
+        Ok(self
+            .client
+            .set_scale_up_fabric_telemetry_interface_state(cmd)
+            .await?)
     }
     async fn fetch_switch_system_image(
         &self,
@@ -579,59 +618,26 @@ impl RmsApi for RackManagerApi {
     ) -> Result<rms::GetSwitchSystemImageJobStatusResponse, RackManagerError> {
         Ok(self.client.get_switch_system_image_job_status(cmd).await?)
     }
-    async fn enable_scale_up_fabric_telemetry_interface(
+    async fn update_switch_system_password(
         &self,
-        cmd: rms::EnableScaleUpFabricTelemetryInterfaceRequest,
-    ) -> Result<rms::EnableScaleUpFabricTelemetryInterfaceResponse, RackManagerError> {
-        Ok(self
-            .client
-            .enable_scale_up_fabric_telemetry_interface(cmd)
-            .await?)
+        cmd: rms::UpdateSwitchSystemPasswordRequest,
+    ) -> Result<rms::UpdateSwitchSystemPasswordResponse, RackManagerError> {
+        Ok(self.client.update_switch_system_password(cmd).await?)
     }
-    async fn version(&self) -> Result<rms::VersionResponse, RackManagerError> {
-        Ok(self.client.version().await?)
+    async fn get_version(&self) -> Result<rms::GetVersionResponse, RackManagerError> {
+        Ok(self.client.get_version().await?)
     }
-    async fn poll_job_status(
+    async fn poll_switch_firmware_job_status(
         &self,
-        cmd: rms::PollJobStatusRequest,
-    ) -> Result<rms::PollJobStatusResponse, RackManagerError> {
-        Ok(self.client.poll_job_status(cmd).await?)
-    }
-    async fn update_node_firmware_async(
-        &self,
-        cmd: rms::UpdateNodeFirmwareAsyncRequest,
-    ) -> Result<rms::UpdateNodeFirmwareAsyncResponse, RackManagerError> {
-        Ok(self.client.update_node_firmware_async(cmd).await?)
-    }
-    async fn update_firmware_by_node_type_async(
-        &self,
-        cmd: rms::UpdateFirmwareByNodeTypeAsyncRequest,
-    ) -> Result<rms::UpdateFirmwareByNodeTypeAsyncResponse, RackManagerError> {
-        Ok(self.client.update_firmware_by_node_type_async(cmd).await?)
-    }
-    async fn update_firmware_by_node_list(
-        &self,
-        cmd: rms::UpdateFirmwareByNodeListRequest,
-    ) -> Result<rms::UpdateFirmwareByNodeListResponse, RackManagerError> {
-        Ok(self.client.update_firmware_by_node_list(cmd).await?)
-    }
-    async fn update_switch_system_image(
-        &self,
-        cmd: rms::UpdateSwitchSystemImageRequest,
-    ) -> Result<rms::UpdateSwitchSystemImageResponse, RackManagerError> {
-        Ok(self.client.update_switch_system_image(cmd).await?)
+        cmd: rms::PollSwitchFirmwareJobStatusRequest,
+    ) -> Result<rms::PollSwitchFirmwareJobStatusResponse, RackManagerError> {
+        Ok(self.client.poll_switch_firmware_job_status(cmd).await?)
     }
     async fn get_firmware_job_status(
         &self,
         cmd: rms::GetFirmwareJobStatusRequest,
     ) -> Result<rms::GetFirmwareJobStatusResponse, RackManagerError> {
         Ok(self.client.get_firmware_job_status(cmd).await?)
-    }
-    async fn update_switch_system_password(
-        &self,
-        cmd: rms::UpdateSwitchSystemPasswordRequest,
-    ) -> Result<rms::UpdateSwitchSystemPasswordResponse, RackManagerError> {
-        Ok(self.client.update_switch_system_password(cmd).await?)
     }
 }
 
@@ -732,6 +738,7 @@ mod tests {
     fn proto_types_implement_serde() {
         // Plain message
         assert_serde::<rms::Credentials>();
+        assert_serde::<rms::ComponentInventoryInfo>();
 
         // Oneof enum - the case that previously required special handling in build.rs
         assert_serde::<rms::credentials::Auth>();
@@ -743,8 +750,8 @@ mod tests {
         // Representative request/response pair
         assert_serde::<rms::SetPowerStateRequest>();
         assert_serde::<rms::SetPowerStateResponse>();
-        assert_serde::<rms::SetScaleUpFabricStateRequest>();
-        assert_serde::<rms::SetScaleUpFabricStateResponse>();
+        assert_serde::<rms::BatchSetScaleUpFabricStateRequest>();
+        assert_serde::<rms::BatchSetScaleUpFabricStateResponse>();
 
         // Timestamp-backed responses
         assert_serde::<rms::GetFirmwareJobStatusResponse>();
