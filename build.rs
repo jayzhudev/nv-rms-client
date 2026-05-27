@@ -31,6 +31,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ".rack_manager",
             "#[derive(serde::Deserialize, serde::Serialize)]",
         )
+        // prost_types::Timestamp does not implement serde, so each timestamp field
+        // needs the crate adapter while the rest of the package can use type_attribute.
         .field_attribute(
             "rack_manager.FirmwareObject.created",
             "#[serde(default, with = \"crate::timestamp_serde\")]",
@@ -41,6 +43,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .field_attribute(
             "rack_manager.FirmwareObjectHistoryRecord.applied_at",
+            "#[serde(default, with = \"crate::timestamp_serde\")]",
+        )
+        .field_attribute(
+            "rack_manager.GetFirmwareJobStatusResponse.created_at",
+            "#[serde(default, with = \"crate::timestamp_serde\")]",
+        )
+        .field_attribute(
+            "rack_manager.GetFirmwareJobStatusResponse.updated_at",
+            "#[serde(default, with = \"crate::timestamp_serde\")]",
+        )
+        .field_attribute(
+            "rack_manager.GetSwitchSystemImageJobStatusResponse.created_at",
+            "#[serde(default, with = \"crate::timestamp_serde\")]",
+        )
+        .field_attribute(
+            "rack_manager.GetSwitchSystemImageJobStatusResponse.updated_at",
             "#[serde(default, with = \"crate::timestamp_serde\")]",
         )
         .include_file("prost_common.rs")

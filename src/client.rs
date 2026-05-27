@@ -354,7 +354,9 @@ impl<'a> RmsTlsClient<'a> {
 
                 // The thing we actually want to retry is a test connection
                 client
-                    .version(tonic::Request::new(()))
+                    .get_version(tonic::Request::new(
+                        crate::protos::rack_manager::GetVersionRequest {},
+                    ))
                     .await
                     .inspect_err(|err| {
                         tracing::error!(
