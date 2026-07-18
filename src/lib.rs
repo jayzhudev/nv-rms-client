@@ -158,6 +158,9 @@ mod tests {
         // Plain message
         assert_serde::<rms::Credentials>();
         assert_serde::<rms::ComponentInventoryInfo>();
+        assert_serde::<rms::NodeDescriptor>();
+        assert_serde::<rms::NodeDescriptorFirmwareTargetList>();
+        assert_serde::<rms::NodeDescriptorFirmwareObjectComponentFilter>();
 
         // Oneof enum - the case that previously required special handling in build.rs
         assert_serde::<rms::credentials::Auth>();
@@ -182,6 +185,10 @@ mod tests {
         assert_serde::<rms::ConfigureSwitchCertificateJobInfo>();
         assert_serde::<rms::GetConfigureSwitchCertificateJobStatusRequest>();
         assert_serde::<rms::GetConfigureSwitchCertificateJobStatusResponse>();
+        assert_serde::<rms::UpgradeSwitchFirmwareRequest>();
+        assert_serde::<rms::UpgradeSwitchFirmwareResponse>();
+        assert_serde::<rms::PollSwitchFirmwareJobStatusRequest>();
+        assert_serde::<rms::PollSwitchFirmwareJobStatusResponse>();
 
         // Timestamp-backed responses
         assert_serde::<rms::GetFirmwareJobStatusResponse>();

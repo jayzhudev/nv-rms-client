@@ -186,6 +186,11 @@ message Endpoint {
   Credentials credentials = 3;
 }
 
+// NodeDescriptor carries flexible hardware identity attributes for RMS dispatch.
+message NodeDescriptor {
+  map<string, string> attributes = 1; // RMS dispatch currently accepts role, vendor, and product_family
+}
+
 /*******************************************************************************
  * SHARED DATA TYPES
  ******************************************************************************/
@@ -194,9 +199,10 @@ message Endpoint {
 message NodeInfo {
   string node_id = 1; // Unique identifier for the node within the rack
   string rack_id = 2; // Identifier of the rack containing this node
-  optional NodeType type = 3; // Hardware-specific node type
+  optional NodeType type = 3; // Hardware-specific node type; non-UNSPECIFIED values override node_descriptor
   optional Endpoint bmc_endpoint = 4; // BMC connection info and credentials
   optional Endpoint host_endpoint = 5; // Host connection info and credentials
+  optional NodeDescriptor node_descriptor = 6; // Flexible node identity used when type is missing or NODE_TYPE_UNSPECIFIED
 }
 
 // NodeSet represents a collection of nodes, reusable wherever a node list is needed.
@@ -226,6 +232,7 @@ message NodeInventoryInfo {
   string rack_id = 9; // Identifier of the rack containing this node
   repeated string host_mac_addresses = 10; // Vector of MAC addresses of the node's Host interfaces
   repeated string host_ip_addresses = 11; // Vector of IP addresses of the node's Host interfaces
+  optional NodeDescriptor node_descriptor = 12; // Flexible node identity returned for descriptor-aware clients
 }
 
 // NodeDeviceInfo represents normalized device metadata for a node.
@@ -566,6 +573,18 @@ service RackManager {
    */
   rpc PushSwitchFirmware(PushSwitchFirmwareRequest) returns (PushSwitchFirmwareResponse) {}
 
+  /*
+   * UpgradeSwitchFirmware starts applying a pushed switch firmware binary.
+   * Deprecated by newer firmware object flows; retained for client compatibility.
+   */
+  rpc UpgradeSwitchFirmware(UpgradeSwitchFirmwareRequest) returns (UpgradeSwitchFirmwareResponse) {}
+
+  /*
+   * PollSwitchFirmwareJobStatus queries legacy switch firmware job state.
+   * Deprecated by GetFirmwareJobStatus; retained for client compatibility.
+   */
+  rpc PollSwitchFirmwareJobStatus(PollSwitchFirmwareJobStatusRequest) returns (PollSwitchFirmwareJobStatusResponse) {}
+
   /*---------------------------------------------------------------------------
    * Scale Up switch control RPCs
    *-------------------------------------------------------------------------*/
@@ -840,7 +859,8 @@ message GetNodeDeviceInfoResponse {
 // ListNodeDeviceInfoByNodeTypeRequest retrieves device metadata for all nodes of a type in a rack.
 message ListNodeDeviceInfoByNodeTypeRequest {
   string rack_id = 2; // Target rack identifier
-  NodeType node_type = 3; // Type of nodes to query
+  NodeType node_type = 3; // Type of nodes to query; non-UNSPECIFIED values override node_descriptor
+  optional NodeDescriptor node_descriptor = 4; // Flexible node identity used when node_type is NODE_TYPE_UNSPECIFIED
 }
 
 // ListNodeDeviceInfoByNodeTypeResponse returns device metadata for all matching nodes in a rack.
@@ -891,9 +911,21 @@ message FirmwareTargetList {
   repeated FirmwareTarget targets = 1;
 }
 
-// FirmwareObjectComponentFilter wraps component names for one NodeType key.
+// NodeDescriptorFirmwareTargetList pairs a flexible node identity with firmware targets.
+message NodeDescriptorFirmwareTargetList {
+  NodeDescriptor node_descriptor = 1;
+  FirmwareTargetList firmware_targets = 2;
+}
+
+// FirmwareObjectComponentFilter wraps component names for one node selector.
 message FirmwareObjectComponentFilter {
   repeated string components = 1; // Optional component filter for one node type
+}
+
+// NodeDescriptorFirmwareObjectComponentFilter pairs a flexible node identity with a component filter.
+message NodeDescriptorFirmwareObjectComponentFilter {
+  NodeDescriptor node_descriptor = 1;
+  FirmwareObjectComponentFilter component_filter = 2;
 }
 
 // UpdateFirmwareRequest initiates a firmware update on a node.
@@ -921,13 +953,14 @@ message UpdateFirmwareResponse {
 // Supports single target (filename + target fields) or multiple targets (firmware_targets list).
 // If firmware_targets is non-empty, it takes precedence over the single filename/target fields.
 message BatchUpdateFirmwareByNodeTypeRequest {
-  NodeType node_type = 2; // Type of nodes to update
+  NodeType node_type = 2; // Type of nodes to update; non-UNSPECIFIED values override node_descriptor
   string filename = 3; // Single firmware filename (used when firmware_targets is empty)
   string target = 4; // Single Redfish target URI (used when firmware_targets is empty)
   string rack_id = 5; // Target rack identifier
   repeated FirmwareTarget firmware_targets = 6; // Multiple (target, filename) pairs for batch component updates
   bool activate = 7; // Whether to activate firmware after all targets are flashed
   bool force_update = 8; // Force the BMC to accept the firmware even if it's a downgrade
+  optional NodeDescriptor node_descriptor = 9; // Flexible node identity used when node_type is NODE_TYPE_UNSPECIFIED
 }
 
 // NodeFirmwareJobInfo pairs a node ID with its async firmware job ID.
@@ -950,6 +983,7 @@ message BatchUpdateFirmwareRequest {
   map<int32, FirmwareTargetList> firmware_targets = 3; // Firmware targets keyed by NodeType enum value
   bool activate = 4; // Whether to activate firmware after installation
   bool force_update = 5; // Force the BMC to accept the firmware even if it's a downgrade
+  repeated NodeDescriptorFirmwareTargetList node_descriptor_firmware_targets = 6; // Firmware targets keyed by flexible node identity
 }
 
 // BatchUpdateFirmwareResponse reports firmware update results.
@@ -1013,6 +1047,7 @@ message FirmwareObjectDeviceComponents {
   NodeType node_type = 1;
   string device_type = 2; // SOT device type label, e.g. "Compute Node", "Switch Tray", "Power Shelf"
   repeated FirmwareObjectComponent components = 3;
+  optional NodeDescriptor node_descriptor = 4; // Flexible node identity for descriptor-aware clients
 }
 
 // FirmwareObjectComponent describes one normalized component clients can request.
@@ -1107,6 +1142,7 @@ message ApplyStoredFirmwareObjectRequest {
   // Component filters keyed by NodeType. If non-empty, only listed node types are updated.
   // A listed node type with an empty components list means all components for that node type.
   map<int32, FirmwareObjectComponentFilter> component_filters = 9;
+  repeated NodeDescriptorFirmwareObjectComponentFilter node_descriptor_component_filters = 10; // Component filters keyed by flexible node identity
 }
 
 message ApplyStoredFirmwareObjectResponse {
@@ -1126,6 +1162,7 @@ message ApplyFirmwareObjectRequest {
   // Component filters keyed by NodeType. If non-empty, only listed node types are updated.
   // A listed node type with an empty components list means all components for that node type.
   map<int32, FirmwareObjectComponentFilter> component_filters = 9;
+  repeated NodeDescriptorFirmwareObjectComponentFilter node_descriptor_component_filters = 10; // Component filters keyed by flexible node identity
 }
 
 message ApplyFirmwareObjectResponse {
@@ -1352,6 +1389,21 @@ message PushSwitchFirmwareResponse {
   string error_message = 4; // Error details if push failed
 }
 
+// UpgradeSwitchFirmware request/response.
+message UpgradeSwitchFirmwareRequest {
+  string rack_id = 2; // Required: Rack ID for inventory lookup
+  string node_id = 3; // Required: Node ID for inventory lookup
+  SwitchFirmwareComponentType component_type = 4; // Required: Firmware component type enum
+  string filename = 5; // Required: Desired filename on the switch
+}
+
+message UpgradeSwitchFirmwareResponse {
+  ReturnCode status = 2; // RETURN_CODE_SUCCESS if job started, RETURN_CODE_FAILURE otherwise
+  string result_json = 3; // JSON object containing upgrade result
+  string error_message = 4; // Error details if upgrade failed
+  string job_id = 5; // Job ID for legacy switch firmware polling
+}
+
 /*******************************************************************************
  * SWITCH PASSWORD CONTROL MESSAGES
  ******************************************************************************/
@@ -1402,6 +1454,20 @@ message GetFirmwareJobStatusResponse {
   string result_json = 10; // JSON with detailed result data (populated on completion)
   google.protobuf.Timestamp created_at = 11; // Time when job was created
   google.protobuf.Timestamp updated_at = 12; // Time when job was last updated
+}
+
+// PollSwitchFirmwareJobStatusRequest queries legacy switch firmware job state.
+message PollSwitchFirmwareJobStatusRequest {
+  string job_id = 2; // Job ID returned by UpgradeSwitchFirmware
+}
+
+// PollSwitchFirmwareJobStatusResponse returns legacy switch firmware job state.
+message PollSwitchFirmwareJobStatusResponse {
+  ReturnCode status = 2; // RETURN_CODE_SUCCESS if job found, RETURN_CODE_FAILURE if job_id not found
+  string job_id = 3; // Echoed job ID
+  string state = 4; // Current job state as a string for legacy callers
+  string result_json = 5; // JSON with detailed result data
+  string error_message = 6; // Error details if job failed
 }
 
 message GetJobStatusRequest {
